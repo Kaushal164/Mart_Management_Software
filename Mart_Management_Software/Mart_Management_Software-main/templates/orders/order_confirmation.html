@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Order Confirmed{% endblock %}
+
+{% block content %}
+<div class="text-center py-4">
+    <div class="mb-4">
+        <i class="bi bi-check-circle-fill display-1 text-success"></i>
+    </div>
+    <h2 class="text-success">Order Placed Successfully!</h2>
+    <p class="lead text-muted">Thank you for your purchase. Your order has been confirmed.</p>
+
+    <div class="card mx-auto mt-4" style="max-width: 600px;">
+        <div class="card-body">
+            <h5>Order #{{ order.order_number }}</h5>
+            <hr>
+            <div class="row text-start">
+                <div class="col-6">
+                    <p><strong>Customer:</strong><br>{{ order.customer_name }}</p>
+                    <p><strong>Phone:</strong><br>{{ order.customer_phone }}</p>
+                    {% if order.customer_address %}
+                    <p><strong>Address:</strong><br>{{ order.customer_address }}</p>
+                    {% endif %}
+                </div>
+                <div class="col-6">
+                    <p><strong>Status:</strong><br><span class="badge bg-info">{{ order.get_status_display }}</span></p>
+                    <p><strong>Payment:</strong><br>{{ order.get_payment_method_display }}</p>
+                    <p><strong>Date:</strong><br>{{ order.created_at|date:"M d, Y h:i A" }}</p>
+                </div>
+            </div>
+            <hr>
+            <!-- Order Items -->
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th class="text-center">Qty</th>
+                        <th class="text-end">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in order.items.all %}
+                    <tr>
+                        <td>{{ item.product_name }}</td>
+                        <td class="text-center">{{ item.quantity }}</td>
+                        <td class="text-end">Rs. {{ item.total_price|intcomma }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="2" class="text-end">Subtotal:</td>
+                        <td class="text-end">Rs. {{ order.subtotal|intcomma }}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" class="text-end">VAT (13%):</td>
+                        <td class="text-end">Rs. {{ order.tax_amount|intcomma }}</td>
+                    </tr>
+                    {% if order.discount_amount %}
+                    <tr>
+                        <td colspan="2" class="text-end">Discount:</td>
+                        <td class="text-end text-danger">-Rs. {{ order.discount_amount|intcomma }}</td>
+                    </tr>
+                    {% endif %}
+                    <tr class="table-success">
+                        <td colspan="2" class="text-end fw-bold">Total:</td>
+                        <td class="text-end fw-bold">Rs. {{ order.total_amount|intcomma }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a href="{% url 'products:product_list' %}" class="btn btn-success">
+            <i class="bi bi-bag"></i> Continue Shopping
+        </a>
+        {% if user.is_authenticated %}
+        <a href="{% url 'orders:order_list' %}" class="btn btn-outline-secondary ms-2">
+            <i class="bi bi-receipt"></i> My Orders
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

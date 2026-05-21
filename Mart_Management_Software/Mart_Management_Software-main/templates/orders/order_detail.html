@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Order #{{ order.order_number }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'orders:order_list' %}">My Orders</a></li>
+        <li class="breadcrumb-item active">{{ order.order_number }}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Order #{{ order.order_number }}</h5>
+                {% if order.status == 'completed' %}
+                <span class="badge bg-success">{{ order.get_status_display }}</span>
+                {% elif order.status == 'cancelled' %}
+                <span class="badge bg-danger">{{ order.get_status_display }}</span>
+                {% else %}
+                <span class="badge bg-info">{{ order.get_status_display }}</span>
+                {% endif %}
+            </div>
+            <div class="card-body p-0">
+                <table class="table mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Product</th>
+                            <th class="text-center">Qty</th>
+                            <th class="text-end">Unit Price</th>
+                            <th class="text-end">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order.items.all %}
+                        <tr>
+                            <td>
+                                <strong>{{ item.product_name }}</strong>
+                                <br><small class="text-muted">SKU: {{ item.product_sku }}</small>
+                            </td>
+                            <td class="text-center">{{ item.quantity }}</td>
+                            <td class="text-end">Rs. {{ item.unit_price|intcomma }}</td>
+                            <td class="text-end">Rs. {{ item.total_price|intcomma }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" class="text-end">Subtotal:</td>
+                            <td class="text-end">Rs. {{ order.subtotal|intcomma }}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" class="text-end">VAT (13%):</td>
+                            <td class="text-end">Rs. {{ order.tax_amount|intcomma }}</td>
+                        </tr>
+                        {% if order.discount_amount %}
+                        <tr>
+                            <td colspan="3" class="text-end">Discount:</td>
+                            <td class="text-end text-danger">-Rs. {{ order.discount_amount|intcomma }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr class="table-success">
+                            <td colspan="3" class="text-end fw-bold fs-5">Total:</td>
+                            <td class="text-end fw-bold fs-5">Rs. {{ order.total_amount|intcomma }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Customer Info -->
+        <div class="card mb-3">
+            <div class="card-header bg-white">
+                <h6 class="mb-0"><i class="bi bi-person"></i> Customer Info</h6>
+            </div>
+            <div class="card-body">
+                <p><strong>{{ order.customer_name }}</strong></p>
+                <p><i class="bi bi-telephone"></i> {{ order.customer_phone }}</p>
+                {% if order.customer_email %}
+                <p><i class="bi bi-envelope"></i> {{ order.customer_email }}</p>
+                {% endif %}
+                {% if order.customer_address %}
+                <p><i class="bi bi-geo-alt"></i> {{ order.customer_address }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Payment Info -->
+        <div class="card">
+            <div class="card-header bg-white">
+                <h6 class="mb-0"><i class="bi bi-credit-card"></i> Payment Info</h6>
+            </div>
+            <div class="card-body">
+                <p><strong>Method:</strong> {{ order.get_payment_method_display }}</p>
+                <p><strong>Status:</strong>
+                    {% if order.payment_status == 'paid' %}
+                    <span class="badge bg-success">Paid</span>
+                    {% else %}
+                    <span class="badge bg-warning">{{ order.get_payment_status_display }}</span>
+                    {% endif %}
+                </p>
+                <p><strong>Date:</strong> {{ order.created_at|date:"M d, Y h:i A" }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
